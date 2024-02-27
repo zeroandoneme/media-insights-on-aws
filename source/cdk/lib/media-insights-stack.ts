@@ -41,11 +41,13 @@ import * as appregistry from 'aws-cdk-lib/aws-servicecatalogappregistry'
 import { DataplaneApiStack } from './media-insights-dataplane-api-stack';
 import { WorkflowApiStack } from './media-insights-workflow-api-stack';
 import { AnalyticsStack } from './media-insights-dataplane-streaming-stack';
+import { OpenaiWhisperDeploymentStack } from './media-insights-whisper-stack';
 import { OperatorLibraryStack } from './operator-library';
 import { TestResourcesStack } from './media-insights-test-operations-stack';
 import { NagSuppressions } from 'cdk-nag';
 import * as util from './utils';
 import { version as cdkPackageVersion } from '../package.json';
+import { open } from 'fs';
 
 export interface MediaInsightsNestedStacks {
     readonly dataplaneApiStack: DataplaneApiStack,
@@ -1304,6 +1306,12 @@ export class MediaInsightsStack extends Stack {
         util.setCondition(analyticsStack, deployAnalyticsCondition);
         analyticsStack.node.addDependency(workflowApiStack);
         analyticsStack.node.addDependency(dataplaneApiStack);
+
+        const openaiWhisperDeploymentStack = new OpenaiWhisperDeploymentStack(this, 'OpenAIWhisperStack', {
+            imageUri:"014661450282.dkr.ecr.eu-west-1.amazonaws.com/whisper-asr-v1",
+            instanceType:"ml.g4dn.2xlarge",
+            initialInstanceCount:1,
+        })
 
         const operatorLibraryStack = new OperatorLibraryStack(this, 'OperatorLibrary', {
             python39Layer,
