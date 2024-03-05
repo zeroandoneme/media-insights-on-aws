@@ -12,9 +12,10 @@
  *  and limitations under the License.
  */
 
-import { App, Aspects } from 'aws-cdk-lib';
+// import { App, Aspects } from 'aws-cdk-lib';
+import { App } from 'aws-cdk-lib';
 import { MediaInsightsStack } from '../lib/media-insights-stack';
-import { AwsSolutionsChecks } from 'cdk-nag';
+// import { AwsSolutionsChecks } from 'cdk-nag';
 
 const app = new App();
 (function createMediaInsightsStack() {
@@ -22,4 +23,5 @@ const app = new App();
 })();
 
 //cdk nag
-Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }));
+// Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }));
+

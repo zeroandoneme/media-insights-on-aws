@@ -29,7 +29,7 @@ import * as kms from 'aws-cdk-lib/aws-kms';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as util from './utils'
+import * as util from './utils';
 
 /**
  * Initialization props for the `OperatorLibraryStack` construct.
@@ -365,6 +365,19 @@ export class OperatorLibraryStack extends NestedStack {
                             ],
                             // These actions only support Resource: "*"
                             resources: ['*'],
+                        }),
+                        new iam.PolicyStatement({
+                            actions: [
+                                "sagemaker:InvokeEndpoint",
+                                "sagemaker:InvokeEndpointAsync",
+                            ],
+                            resources: [`arn:aws:sagemaker:${Aws.REGION}:${Aws.ACCOUNT_ID}:endpoint/openaiwhisperendpoint`],
+                        }),
+                        new iam.PolicyStatement({
+                            actions: [
+                                "dynamodb:GetItem",
+                            ],
+                            resources: [`arn:aws:dynamodb:${Aws.REGION}:${Aws.ACCOUNT_ID}:table/OpenAIWhisperLogsDynamodbTable`],
                         }),
                         policyLogEvents,
                         policyS3ReadWrite,
@@ -1102,7 +1115,8 @@ export class OperatorLibraryStack extends NestedStack {
         });
 
         // Transcribe Lambdas
-
+        const WhisperSageMakerEndpoint = 'OpenAIWhisperEndpoint';
+        const DynamodbTableName = 'OpenAIWhisperLogsDynamodbTable';
         const StartTranscribeFunction = createLambdaFunction(this, 'StartTranscribeFunction', "start_transcribe.zip", 120, {
             handler: "start_transcribe.lambda_handler",
             role: transcribeRole,
@@ -1111,6 +1125,8 @@ export class OperatorLibraryStack extends NestedStack {
                 DataplaneEndpoint,
                 DATAPLANE_BUCKET,
                 botoConfig,
+                WhisperSageMakerEndpoint,
+                DynamodbTableName,
             }
         });
 
@@ -1123,6 +1139,7 @@ export class OperatorLibraryStack extends NestedStack {
                 DataplaneEndpoint,
                 DATAPLANE_BUCKET,
                 botoConfig,
+                DynamodbTableName,
             }
         });
 

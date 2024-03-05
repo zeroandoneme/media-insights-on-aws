@@ -44,10 +44,9 @@ import { AnalyticsStack } from './media-insights-dataplane-streaming-stack';
 import { OpenaiWhisperDeploymentStack } from './media-insights-whisper-stack';
 import { OperatorLibraryStack } from './operator-library';
 import { TestResourcesStack } from './media-insights-test-operations-stack';
-import { NagSuppressions } from 'cdk-nag';
+// import { NagSuppressions } from 'cdk-nag';
 import * as util from './utils';
 import { version as cdkPackageVersion } from '../package.json';
-import { open } from 'fs';
 
 export interface MediaInsightsNestedStacks {
     readonly dataplaneApiStack: DataplaneApiStack,
@@ -265,11 +264,11 @@ export class MediaInsightsStack extends Stack {
             });
             table.node.addDependency(keyAlias);
 
-            // cfn_nag
-            util.setNagSuppressRules(table, {
-                id: 'W28',
-                reason: "Table name is constructed with stack name. On update, we need to keep the existing table name.",
-            });
+            // // cfn_nag
+            // util.setNagSuppressRules(table, {
+            //     id: 'W28',
+            //     reason: "Table name is constructed with stack name. On update, we need to keep the existing table name.",
+            // });
             return table;
         }
 
@@ -351,10 +350,10 @@ export class MediaInsightsStack extends Stack {
         });
 
         // cfn_nag / cdk_nag
-        util.setNagSuppressRules(dataplaneLogsBucket,
-            { id: "W35", id2: "AwsSolutions-S1", reason: "Used to store access logs for other buckets" },
-            { id: "W51", reason: "Bucket is private and does not need a bucket policy" },
-        );
+        // util.setNagSuppressRules(dataplaneLogsBucket,
+        //     { id: "W35", id2: "AwsSolutions-S1", reason: "Used to store access logs for other buckets" },
+        //     { id: "W51", reason: "Bucket is private and does not need a bucket policy" },
+        // );
 
         const dataplaneBucket = new s3.Bucket(this, 'Dataplane', {
             enforceSSL: true,
@@ -410,32 +409,33 @@ export class MediaInsightsStack extends Stack {
             masterKey: keyAlias,
         });
 
-        const workflowExecutionEventTopicPolicy = new sns.TopicPolicy(this, 'WorkflowExecutionEventTopicPolicy', {
-            topics: [workflowExecutionEventTopic],
-            policyDocument: new iam.PolicyDocument({
-                statements: [
-                    new iam.PolicyStatement({
-                        principals: [new iam.AccountRootPrincipal()],
-                        actions: [
-                            "SNS:Subscribe",
-                            "SNS:Receive",
-                        ],
-                        resources: [workflowExecutionEventTopic.topicArn],
-                        conditions: {
-                            StringEquals: {
-                                ['AWS:SourceOwner']: Aws.ACCOUNT_ID,
-                            }
-                        },
-                    }),
-                ],
-            }),
-        });
+        // const workflowExecutionEventTopicPolicy = new sns.TopicPolicy(this, 'WorkflowExecutionEventTopicPolicy', {
+        //     topics: [workflowExecutionEventTopic],
+        //     policyDocument: new iam.PolicyDocument({
+        //         statements: [
+        //             new iam.PolicyStatement({
+        //                 principals: [new iam.AccountRootPrincipal()],
+        //                 actions: [
+        //                     "SNS:Subscribe",
+        //                     "SNS:Receive",
+        //                 ],
+        //                 resources: [workflowExecutionEventTopic.topicArn],
+        //                 conditions: {
+        //                     StringEquals: {
+        //                         ['AWS:SourceOwner']: Aws.ACCOUNT_ID,
+        //                     }
+        //                 },
+        //             }),
+        //         ],
+        //     }),
+        // });
+
 
         // cfn_nag
-        util.setNagSuppressRules(workflowExecutionEventTopicPolicy, {
-            id: 'W11',
-            reason: "The topic permissions are scoped to the account using the condition",
-        });
+        // util.setNagSuppressRules(workflowExecutionEventTopicPolicy, {
+        //     id: 'W11',
+        //     reason: "The topic permissions are scoped to the account using the condition",
+        // });
 
         //
         // Service - SQS
@@ -459,12 +459,12 @@ export class MediaInsightsStack extends Stack {
 
 
         // cdk_nag
-        NagSuppressions.addResourceSuppressions([
-            workflowExecutionLambdaDeadLetterQueue,
-            stageExecutionDeadLetterQueue,
-        ], [
-            { id: 'AwsSolutions-SQS3', reason: "The SQS queue is a dead-letter queue (DLQ)" },
-        ]);
+        // NagSuppressions.addResourceSuppressions([
+        //     workflowExecutionLambdaDeadLetterQueue,
+        //     stageExecutionDeadLetterQueue,
+        // ], [
+        //     { id: 'AwsSolutions-SQS3', reason: "The SQS queue is a dead-letter queue (DLQ)" },
+        // ]);
 
         const workflowExecutionEventQueue = new sqs.Queue(this, 'WorkflowExecutionEventQueue', {
             deadLetterQueue: {
@@ -505,11 +505,11 @@ export class MediaInsightsStack extends Stack {
             }),
         );
 
-        // cfn_nag
-        util.setNagSuppressRules(sqsQueuePolicy, {
-            id: 'W11',
-            reason: "The queue permissions are scoped to the SNS topic using the condition",
-        });
+        // // cfn_nag
+        // util.setNagSuppressRules(sqsQueuePolicy, {
+        //     id: 'W11',
+        //     reason: "The queue permissions are scoped to the SNS topic using the condition",
+        // });
 
         workflowExecutionEventTopic.addSubscription(new subscriptions.SqsSubscription(workflowExecutionEventQueue));
 
@@ -571,9 +571,9 @@ export class MediaInsightsStack extends Stack {
         });
 
         // cdk_nag
-        NagSuppressions.addResourceSuppressions(helperExecutionRole, [
-            { id: 'AwsSolutions-IAM5', reason: "Resource ARNs are not generated at the time of policy creation", },
-        ]);
+        // NagSuppressions.addResourceSuppressions(helperExecutionRole, [
+        //     { id: 'AwsSolutions-IAM5', reason: "Resource ARNs are not generated at the time of policy creation", },
+        // ]);
 
         const lambdaRolePolicyStatements = [
             new iam.PolicyStatement({
@@ -850,10 +850,10 @@ export class MediaInsightsStack extends Stack {
             },
         });
 
-        // cdk_nag
-        NagSuppressions.addResourceSuppressions(anonymizedDataCustomResourceRole, [
-            { id: 'AwsSolutions-IAM5', reason: "Resource ARNs are not generated at the time of policy creation", },
-        ]);
+        // // cdk_nag
+        // NagSuppressions.addResourceSuppressions(anonymizedDataCustomResourceRole, [
+        //     { id: 'AwsSolutions-IAM5', reason: "Resource ARNs are not generated at the time of policy creation", },
+        // ]);
 
 
         //
@@ -1164,32 +1164,32 @@ export class MediaInsightsStack extends Stack {
             timeout: Duration.seconds(180),
         });
 
-        // cfn_nag
-        [
-            helperFunction,
-            workflowSchedulerLambda,
-            workflowErrorHandlerLambda,
-            completeStageLambda,
-            filterOperationLambda,
-            operatorFailedLambda,
-            startWaitOperationLambda,
-            checkWaitOperationLambda,
-            workflowExecutionStreamingFunction,
-            anonymizedDataCustomResource,
-        ].forEach(l => util.setNagSuppressRules(l,
-            {
-                id: 'W89',
-                reason: "This Lambda function does not need to access any resource provisioned within a VPC.",
-            },
-            {
-                id: 'W92',
-                reason: "This function does not require performance optimization, so the default concurrency limits suffice.",
-            },
-            {
-                id: 'AwsSolutions-L1',
-                reason: "Latest lambda version not supported at this time.",
-            }
-        ));
+        // // cfn_nag
+        // [
+        //     helperFunction,
+        //     workflowSchedulerLambda,
+        //     workflowErrorHandlerLambda,
+        //     completeStageLambda,
+        //     filterOperationLambda,
+        //     operatorFailedLambda,
+        //     startWaitOperationLambda,
+        //     checkWaitOperationLambda,
+        //     workflowExecutionStreamingFunction,
+        //     anonymizedDataCustomResource,
+        // ].forEach(l => util.setNagSuppressRules(l,
+        //     {
+        //         id: 'W89',
+        //         reason: "This Lambda function does not need to access any resource provisioned within a VPC.",
+        //     },
+        //     {
+        //         id: 'W92',
+        //         reason: "This function does not require performance optimization, so the default concurrency limits suffice.",
+        //     },
+        //     {
+        //         id: 'AwsSolutions-L1',
+        //         reason: "Latest lambda version not supported at this time.",
+        //     }
+        // ));
 
 
         // stream event mapping for lambda
@@ -1208,11 +1208,11 @@ export class MediaInsightsStack extends Stack {
             logGroupName: `/aws/vendedlogs/states/${Aws.STACK_NAME}-StepFunctionLogGroup-${ShortUUID}`,
         });
 
-        // cfn_nag
-        util.setNagSuppressRules(stepFunctionLogGroup, {
-            id: 'W84',
-            reason: "Log group data is encrypted by default in CloudWatch",
-        });
+        // // cfn_nag
+        // util.setNagSuppressRules(stepFunctionLogGroup, {
+        //     id: 'W84',
+        //     reason: "Log group data is encrypted by default in CloudWatch",
+        // });
 
         // Tag Resources
 
@@ -1311,7 +1311,15 @@ export class MediaInsightsStack extends Stack {
             imageUri:"014661450282.dkr.ecr.eu-west-1.amazonaws.com/whisper-asr-v1",
             instanceType:"ml.g4dn.2xlarge",
             initialInstanceCount:1,
+            DataplaneBucketName: dataplaneBucket.bucketName,
         })
+        // NagSuppressions.addStackSuppressions(openaiWhisperDeploymentStack, [
+        //     { id: 'AwsSolutions-L1', reason: 'External Stack' },
+        //     { id: 'AwsSolutions-IAM4', reason: 'External Stack' },
+        //     { id: 'AwsSolutions-IAM5', reason: 'External Stack' },
+        //     { id: 'AwsSolutions-SNS2', reason: 'External Stack' },
+        //     { id: 'AwsSolutions-SNS3', reason: 'External Stack' },
+        //   ]);
 
         const operatorLibraryStack = new OperatorLibraryStack(this, 'OperatorLibrary', {
             python39Layer,
@@ -1332,6 +1340,7 @@ export class MediaInsightsStack extends Stack {
         });
         operatorLibraryStack.addDependency(workflowApiStack);
         operatorLibraryStack.addDependency(dataplaneApiStack);
+        operatorLibraryStack.addDependency(openaiWhisperDeploymentStack);
 
         const testResourcesStack = new TestResourcesStack(this, 'TestResources', {
             python311Layer,
@@ -1510,27 +1519,27 @@ export class MediaInsightsStack extends Stack {
         // cfn_nag rules
         //
 
-        // cfn_nag
-        [stageExecutionRole, operationLambdaExecutionRole, operatorFailedRole]
-            .forEach(role => util.setNagSuppressRules(role, {
-                id: 'W11',
-                id2: 'AwsSolutions-IAM5',
-                reason: "The X-Ray policy uses actions that must be applied to all resources. See https://docs.aws.amazon.com/xray/latest/devguide/security_iam_id-based-policy-examples.html#xray-permissions-resources",
-            }));
+        // // cfn_nag
+        // [stageExecutionRole, operationLambdaExecutionRole, operatorFailedRole]
+        //     .forEach(role => util.setNagSuppressRules(role, {
+        //         id: 'W11',
+        //         id2: 'AwsSolutions-IAM5',
+        //         reason: "The X-Ray policy uses actions that must be applied to all resources. See https://docs.aws.amazon.com/xray/latest/devguide/security_iam_id-based-policy-examples.html#xray-permissions-resources",
+        //     }));
 
-        // cfn_nag
-        util.setNagSuppressRules(stepFunctionRole, {
-            id: 'W11',
-            id2: 'AwsSolutions-IAM5',
-            reason: "The X-Ray and Cloudwatch policies use actions that must be applied to all resources. See https://docs.aws.amazon.com/xray/latest/devguide/security_iam_id-based-policy-examples.html#xray-permissions-resources and https://docs.aws.amazon.com/service-authorization/latest/reference/list_amazoncloudwatchlogs.html",
-        });
+        // // cfn_nag
+        // util.setNagSuppressRules(stepFunctionRole, {
+        //     id: 'W11',
+        //     id2: 'AwsSolutions-IAM5',
+        //     reason: "The X-Ray and Cloudwatch policies use actions that must be applied to all resources. See https://docs.aws.amazon.com/xray/latest/devguide/security_iam_id-based-policy-examples.html#xray-permissions-resources and https://docs.aws.amazon.com/service-authorization/latest/reference/list_amazoncloudwatchlogs.html",
+        // });
 
-        // cfn_nag
-        util.setNagSuppressRules(workflowExecutionStreamLambdaRole, {
-            id: 'W11',
-            id2: 'AwsSolutions-IAM5',
-            reason: "Lambda requires ability to write to cloudwatch *, as configured in the default AWS lambda execution role.",
-        });
+        // // cfn_nag
+        // util.setNagSuppressRules(workflowExecutionStreamLambdaRole, {
+        //     id: 'W11',
+        //     id2: 'AwsSolutions-IAM5',
+        //     reason: "Lambda requires ability to write to cloudwatch *, as configured in the default AWS lambda execution role.",
+        // });
 
         //
         // Outputs

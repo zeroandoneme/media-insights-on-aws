@@ -649,6 +649,8 @@ fi
 [ -e .chalice/deployments ] && rm -rf .chalice/deployments
 
 echo "running chalice..."
+export AWS_DEFAULT_REGION=eu-west-1
+echo $AWS_DEFAULT_REGION
 chalice package dist
 echo "...chalice done"
 mkdir -p "$cdk_dir/dist"
@@ -805,6 +807,7 @@ do_cmd cdk synth -q --output="$staging_dist_dir"
 
 # Remove unnecessary output files
 do_cmd cd "$staging_dist_dir"
+
 rm -f tree.json manifest.json cdk.out *.csv
 
 echo "Preparing template files:"
@@ -819,6 +822,7 @@ declare -ar nested_stacks_names_src=( \
   Analytics \
   OperatorLibrary \
   TestResources \
+  OpenAIWhisperStack
 )
 declare -ar nested_stacks_names_dst=( \
   workflow-api-stack \
@@ -826,6 +830,7 @@ declare -ar nested_stacks_names_dst=( \
   dataplane-streaming-stack \
   operator-library \
   test-operations-stack \
+  whisper-stack
 )
 
 for i in `seq 0 $((${#nested_stacks_names_src[@]} - 1))`; do
